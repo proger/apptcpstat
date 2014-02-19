@@ -14,8 +14,7 @@
 #define MAX_MSG_PATH 100
 #define MAX_MSG_LEN_PLAIN 130
 
-
-static int
+int
 carbon_connect_fd(const char *host, int port)
 {
 	int sockfd;
@@ -42,15 +41,6 @@ carbon_connect_fd(const char *host, int port)
 	}
 
 	return sockfd;
-}
-
-dispatch_io_t
-carbon_connect(dispatch_queue_t queue, const char *host, int port)
-{
-	int fd = carbon_connect_fd(host, port);
-	if (fd == -1)
-		return NULL;
-	return dispatch_io_create(DISPATCH_IO_STREAM, fd, queue, ^(int error) { close(fd); });
 }
 
 void

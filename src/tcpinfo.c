@@ -80,7 +80,9 @@ fd_tcpinfo_carbon_sched(int fd, char *identifier, char *host, int port)
 
 	ctx->queue = dispatch_queue_create(qname, NULL);
 	free(qname);
-	ctx->io = carbon_connect(ctx->queue, host, port);
+	ctx->carbon_fd = carbon_connect_fd(host, port);
+	ctx->io = dispatch_io_create(DISPATCH_IO_STREAM, ctx->carbon_fd, ctx->queue,
+			^(int error) { if (error) printf("%s: io error %d\n", qname, error); close(fd); });
 	ctx->fd = fd;
 
 	dispatch_async_f(ctx->queue, ctx, fd_tcpinfo_carbon_tick);

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <dispatch/dispatch.h>
 #include <dispatch/time.h>
@@ -14,6 +15,7 @@
 #include <libssh2.h>
 
 #include "tcpinfo.h"
+#include "carbonplain.h"
 
 struct loop_ctx {
 	int fd;
@@ -49,6 +51,7 @@ mainloop(void *arg)
 int
 main(int argc, char **argv)
 {
+	assert(argc == 2 && "usage: ./test ip-of-carbon-server");
 	ctx.host = argv[1];
 	dispatch_async_f(dispatch_get_main_queue(), &ctx, mainloop);
 	dispatch_main();
