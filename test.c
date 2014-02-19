@@ -39,7 +39,8 @@ mainloop(void *arg)
 		fprintf(stderr, "failed to connect!\n");
 	}
 
-	fd_tcpinfo_carbon_sched(fd, "test.ssh", ctx->host, 2003);
+	struct carbon_ctx *carbon = fd_tcpinfo_carbon_sched(fd, "test.ssh", ctx->host, 2003);
+	fd_tcpinfo_carbon_sched(carbon->carbon_fd, "tast.carbon", ctx->host, 2003);
 
 	LIBSSH2_SESSION *session;
 	session = libssh2_session_init();
