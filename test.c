@@ -15,45 +15,15 @@
 
 #include "tcpinfo.h"
 
-#define T_TIMEOUT 50LL * NSEC_PER_MSEC
-
-static dispatch_queue_t statq;
-
-struct tick_ctx {
+struct loop_ctx {
 	int fd;
+	char *host;
 } ctx = {-1};
-
-void
-tick_stat(void *arg)
-{
-	struct tick_ctx *ctx = arg;
-	dispatch_time_t milestone;
-
-	if (ctx->fd < 0) {
-		printf("noconn\n");
-		goto resched;
-	}
-
-	struct tcp_info *info;
-	info = calloc(1, sizeof(*info));
-	if (ats_tcpinfo(ctx->fd, info) == 0) {
-		char *buf = tcp_info_str(info);
-		printf("rtt: %u rxpackets: %llu txpackets: %llu\n", info->tcpi_rttcur, info->tcpi_rxpackets, info->tcpi_txpackets);
-		free(buf);
-	} else {
-		perror("getsockopt");
-	}
-	free(info);
-
-resched:
-	milestone = dispatch_time(DISPATCH_TIME_NOW, T_TIMEOUT);
-	dispatch_after_f(milestone, statq, ctx, tick_stat);
-}
 
 void
 mainloop(void *arg)
 {
-	struct tick_ctx *ctx = arg;
+	struct loop_ctx *ctx = arg;
 	libssh2_init(0);
 	
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -67,6 +37,8 @@ mainloop(void *arg)
 		fprintf(stderr, "failed to connect!\n");
 	}
 
+	fd_tcpinfo_carbon_sched(fd, "test.ssh", ctx->host, 2003);
+
 	LIBSSH2_SESSION *session;
 	session = libssh2_session_init();
 
@@ -77,11 +49,9 @@ mainloop(void *arg)
 int
 main(int argc, char **argv)
 {
-	statq = dispatch_queue_create("wow.statq", NULL);
-
-	tick_stat(&ctx);
+	ctx.host = argv[1];
 	dispatch_async_f(dispatch_get_main_queue(), &ctx, mainloop);
-
 	dispatch_main();
 	return 0;
 }
+

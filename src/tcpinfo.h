@@ -64,4 +64,7 @@ struct tcp_info {
 
 char *tcp_info_str(struct tcp_info *info);
 
-int ats_tcpinfo(int fd, struct tcp_info *info);
+int fd_tcpinfo(int fd, struct tcp_info *info);
+
+struct carbon_ctx;
+struct carbon_ctx *fd_tcpinfo_carbon_sched(int fd, char *identifier, char *host, int port);
